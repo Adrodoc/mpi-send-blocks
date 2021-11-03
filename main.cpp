@@ -33,9 +33,7 @@ int main(int argc, char *argv[])
         auto end = start + seconds{1};
         do
         {
-            // Trigger MPI progress
-            int flag;
-            MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, MPI_STATUS_IGNORE);
+            MPI_Win_flush(1, win);
         } while (clock::now() < end);
         std::cout << "0: Receiving..." << std::endl;
         MPI_Recv(NULL, 0, MPI_UINT8_T, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
