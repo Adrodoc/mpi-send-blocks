@@ -21,20 +21,18 @@ int main(int argc, char *argv[])
     MPI_Win_lock_all(0, win);
     MPI_Barrier(MPI_COMM_WORLD);
 
+    using clock = std::chrono::high_resolution_clock;
+    using seconds = std::chrono::seconds;
+
     switch (rank)
     {
     case 0:
     {
         std::cout << "0: Waiting..." << std::endl;
-        using clock = std::chrono::high_resolution_clock;
-        using seconds = std::chrono::seconds;
-
         auto start = clock::now();
         auto end = start + seconds{1};
-        do
-        {
-            MPI_Win_flush(1, win);
-        } while (clock::now() < end);
+        while (clock::now() < end)
+            ;
         std::cout << "0: Receiving..." << std::endl;
         MPI_Recv(NULL, 0, MPI_UINT8_T, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         std::cout << "0: Finished" << std::endl;
@@ -44,6 +42,11 @@ int main(int argc, char *argv[])
     {
         std::cout << "1: Sending..." << std::endl;
         MPI_Send(NULL, 0, MPI_UINT8_T, 0, 0, MPI_COMM_WORLD);
+        std::cout << "1: Waiting..." << std::endl;
+        auto start = clock::now();
+        auto end = start + seconds{2};
+        while (clock::now() < end)
+            ;
         std::cout << "1: Finished" << std::endl;
         break;
     }
