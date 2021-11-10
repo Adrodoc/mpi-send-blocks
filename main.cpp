@@ -49,9 +49,9 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     int size;
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    int min_rank = 0;
-    int max_rank = size - 1;
-    bool participate = rank == min_rank || rank == max_rank;
+    int recv_rank = 0;
+    int send_rank = size - 1;
+    bool participate = rank == recv_rank || rank == send_rank;
 
     if (participate)
         std::cout << formatted_time() << ' ' << rank << ": Allocating window..." << std::endl;
@@ -69,17 +69,17 @@ int main(int argc, char *argv[])
 
     std::cout << formatted_time() << ' ' << rank << ": Waiting..." << std::endl;
 
-    if (rank == min_rank)
+    if (rank == recv_rank)
     {
         spin(seconds{2});
         std::cout << formatted_time() << ' ' << rank << ": Receiving..." << std::endl;
-        MPI_Recv(NULL, 0, MPI_UINT8_T, max_rank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(NULL, 0, MPI_UINT8_T, send_rank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
-    else if (rank == max_rank)
+    else if (rank == send_rank)
     {
         spin(seconds{1});
         std::cout << formatted_time() << ' ' << rank << ": Sending..." << std::endl;
-        MPI_Send(NULL, 0, MPI_UINT8_T, min_rank, 0, MPI_COMM_WORLD);
+        MPI_Send(NULL, 0, MPI_UINT8_T, recv_rank, 0, MPI_COMM_WORLD);
         std::cout << formatted_time() << ' ' << rank << ": Waiting..." << std::endl;
         spin(seconds{2});
     }
