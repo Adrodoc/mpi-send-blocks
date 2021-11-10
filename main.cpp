@@ -67,27 +67,26 @@ int main(int argc, char *argv[])
 
     using seconds = std::chrono::seconds;
 
-    if (participate)
-    {
-        std::cout << formatted_time() << ' ' << rank << ": Waiting..." << std::endl;
-        spin(seconds{1});
-    }
+    std::cout << formatted_time() << ' ' << rank << ": Waiting..." << std::endl;
+
     if (rank == min_rank)
     {
-        spin(seconds{1});
+        spin(seconds{2});
         std::cout << formatted_time() << ' ' << rank << ": Receiving..." << std::endl;
         MPI_Recv(NULL, 0, MPI_UINT8_T, max_rank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        std::cout << formatted_time() << ' ' << rank << ": Finished" << std::endl;
     }
-    if (rank == max_rank)
+    else if (rank == max_rank)
     {
+        spin(seconds{1});
         std::cout << formatted_time() << ' ' << rank << ": Sending..." << std::endl;
         MPI_Send(NULL, 0, MPI_UINT8_T, min_rank, 0, MPI_COMM_WORLD);
         std::cout << formatted_time() << ' ' << rank << ": Waiting..." << std::endl;
         spin(seconds{2});
-        std::cout << formatted_time() << ' ' << rank << ": Finished" << std::endl;
     }
+    else
+        spin(seconds{3});
 
+    std::cout << formatted_time() << ' ' << rank << ": Finished" << std::endl;
     MPI_Win_unlock_all(win);
 
     MPI_Finalize();
